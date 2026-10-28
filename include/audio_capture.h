@@ -4,12 +4,14 @@
 #include <alsa/asoundlib.h>
 
 // Default Capture Configuration
-#define PCM_CAPTURE_DEFAULT_DEVICE       "default"
+#define PCM_CAPTURE_DEFAULT_DEVICE       "hw:3,0"
 #define PCM_CAPTURE_DEFAULT_FORMAT       SND_PCM_FORMAT_S16_LE
 #define PCM_CAPTURE_DEFAULT_CHANNELS     2
 #define PCM_CAPTURE_DEFAULT_RATE         48000
 #define PCM_CAPTURE_DEFAULT_PERIOD_SIZE  480
 #define PCM_CAPTURE_DEFAULT_PERIOD_COUNT 4
+#define PCM_CAPTURE_DEFAULT_BUFFER_SIZE  (PCM_CAPTURE_DEFAULT_PERIOD_SIZE * PCM_CAPTURE_DEFAULT_PERIOD_COUNT)
+
 
 // PCM Capture Configuration 
 typedef struct
@@ -19,6 +21,7 @@ typedef struct
     unsigned int rate;             // Sample rate in Hz
     snd_pcm_uframes_t period_size; // Frames per period
     unsigned int period_count;     // Desired number of periods
+    snd_pcm_uframes_t buffer_size;
     const char *device;            // ALSA PCM device name
 
 } pcm_config_t;
