@@ -29,8 +29,7 @@ int audio_ctl_list(const char *card_name)
     }
 
     printf("ALSA control interface: %s\n", card_name);
-    printf("Number of controls: %u\n",
-           snd_ctl_elem_list_get_count(list));
+    printf("Number of controls: %u\n", snd_ctl_elem_list_get_count(list));
 
     snd_ctl_close(ctl);
 
