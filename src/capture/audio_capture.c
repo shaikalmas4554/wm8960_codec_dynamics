@@ -2,30 +2,6 @@
 #include <stdint.h>
 #include "audio_capture.h"
 
-// Write a 16-bit little-endian integer to a file.
-static int write_u16_le(FILE* file, uint16_t data)
-{
-    unsigned char bytes[2];
-
-    bytes[0] = (unsigned char)(data & 0xFF);
-    bytes[1] = (unsigned char)((data >> 8) & 0xFF);
-
-    return fwrite(bytes, 1, sizeof(bytes), file) == sizeof(bytes) ? 0 : -1;
-}
-
-// Write a 32-bit little-endian integer to a file.
-static int write_u32_le(FILE *file, uint32_t value)
-{
-    unsigned char bytes[4];
-
-    bytes[0] = (unsigned char)(value & 0xFF);
-    bytes[1] = (unsigned char)((value >> 8) & 0xFF);
-    bytes[2] = (unsigned char)((value >> 16) & 0xFF);
-    bytes[3] = (unsigned char)((value >> 24) & 0xFF);
-
-    return fwrite(bytes, 1, sizeof(bytes), file) == sizeof(bytes) ? 0 : -1;
-}
-
 // capture init
 int audio_capture_config_init(pcm_config_t *config)
 {
@@ -189,7 +165,193 @@ cleanup:
 // audio capture
 int audio_capture(const char *filename, const pcm_config_t *config, unsigned int duration_seconds)
 {
+    snd_pcm_t *pcm = NULL;
+    pcm_config_t actual_config;
+    FILE *file = NULL;
+    unsigned char *buffer = NULL;
 
+    snd_pcm_uframes_t frames_remaining;
+    snd_pcm_uframes_t frames_to_read;
+    snd_pcm_sframes_t frames_read;
+
+    size_t bytes_per_frame;
+    size_t buffer_bytes;
+    size_t bytes_to_write;
+
+    uint64_t total_frames;
+    uint64_t total_bytes = 0;
+
+    int ret;
+    int result = -1;
+
+    if (filename == NULL || filename[0] == '\0' || config == NULL ||
+        duration_seconds == 0 || config->rate == 0 || config->channels == 0 ||
+        config->period_size == 0 || config->period_count == 0 || config->device == NULL)
+    {
+        fprintf(stderr, "Error: Invalid capture arguments\n");
+        return -EINVAL;
+    }
+
+    if (config->format != SND_PCM_FORMAT_S16_LE)
+    {
+        fprintf(stderr,
+                "Error: This WAV implementation supports S16_LE only\n");
+        return -EINVAL;
+    }
+
+    if (config->channels > UINT16_MAX / 2)
+    {
+        fprintf(stderr, "Error: Unsupported channel count\n");
+        return -EINVAL;
+    }
+
+    actual_config = *config;
+    file = fopen(filename, "wb+");
+
+    if (file == NULL)
+    {
+        perror("Failed to open output WAV file");
+        goto cleanup;
+    }
+
+    ret = snd_pcm_open(&pcm, actual_config.device, SND_PCM_STREAM_CAPTURE, 0);
+    if (ret < 0)
+    {
+        fprintf(stderr, "Failed to open ALSA device: %s\n", snd_strerror(ret));
+        goto cleanup;
+    }
+
+    ret = audio_capture_configure(pcm, &actual_config);
+    if (ret < 0)
+    {
+        fprintf(stderr, "Failed to configure PCM device: %s\n", snd_strerror(ret));
+        goto cleanup;
+    }
+
+    if (actual_config.rate == 0 || actual_config.period_size == 0)
+    {
+        fprintf(stderr, "Error: Invalid actual ALSA parameters\n");
+        goto cleanup;
+    }
+
+    bytes_per_frame = (size_t)actual_config.channels * 2U;
+    if (actual_config.period_size > SIZE_MAX / bytes_per_frame)
+    {
+        fprintf(stderr, "Error: Audio buffer size overflow\n");
+        goto cleanup;
+    }
+
+    buffer_bytes = (size_t)actual_config.period_size * bytes_per_frame;
+    buffer = malloc(buffer_bytes);
+    if (buffer == NULL)
+    {
+        perror("Failed to allocate audio buffer");
+        goto cleanup;
+    }
+
+    ret = snd_pcm_prepare(pcm);
+    if (ret < 0)
+    {
+        fprintf(stderr, "Failed to prepare PCM device: %s\n", snd_strerror(ret));
+        goto cleanup;
+    }
+
+    total_frames = (uint64_t)actual_config.rate * duration_seconds;
+    if (total_frames > (UINT32_MAX - 36U) / bytes_per_frame)
+    {
+        fprintf(stderr, "Error: Recording is too large for standard WAV\n");
+        goto cleanup;
+    }
+
+    if (write_wav_header(file, actual_config.rate, actual_config.channels, 0) < 0)
+    {
+        fprintf(stderr, "Failed to write WAV header\n");
+        goto cleanup;
+    }
+
+    frames_remaining = (snd_pcm_uframes_t)total_frames;
+
+    printf("Recording started...\n");
+    printf("Device   : %s\n", actual_config.device);
+    printf("Rate     : %u Hz\n", actual_config.rate);
+    printf("Channels : %u\n", actual_config.channels);
+    printf("Duration : %u seconds\n", duration_seconds);
+
+    while (frames_remaining > 0)
+    {
+        frames_to_read = actual_config.period_size;
+
+        if (frames_to_read > frames_remaining)
+            frames_to_read = frames_remaining;
+
+        frames_read = snd_pcm_readi(pcm, buffer, frames_to_read);
+        if (frames_read < 0)
+        {
+            ret = snd_pcm_recover(pcm, (int)frames_read, 1);
+            if (ret < 0)
+            {
+                fprintf(stderr, "Audio capture failed: %s\n", snd_strerror(ret));
+                goto cleanup;
+            }
+            continue;
+        }
+
+        if (frames_read == 0)
+        {
+            fprintf(stderr, "Warning: ALSA returned zero frames\n");
+            continue;
+        }
+
+        bytes_to_write = (size_t)frames_read * bytes_per_frame;
+        if (total_bytes + bytes_to_write > UINT32_MAX - 36U)
+        {
+            fprintf(stderr, "Error: WAV file size limit reached\n");
+            goto cleanup;
+        }
+
+        if (fwrite(buffer, 1, bytes_to_write, file) != bytes_to_write)
+        {
+            perror("Failed to write captured audio");
+            goto cleanup;
+        }
+
+        total_bytes += bytes_to_write;
+        frames_remaining -= (snd_pcm_uframes_t)frames_read;
+    }
+
+    if (write_wav_header(file, actual_config.rate, actual_config.channels, (uint32_t)total_bytes) < 0)
+    {
+        fprintf(stderr, "Failed to finalize WAV header\n");
+        goto cleanup;
+    }
+
+    if (fflush(file) != 0)
+    {
+        perror("Failed to flush WAV file");
+        goto cleanup;
+    }
+
+    printf("Recording completed successfully.\n");
+    printf("Frames captured: %llu\n", (unsigned long long)(total_bytes / bytes_per_frame));
+    printf("Audio data     : %llu bytes\n", (unsigned long long)total_bytes);
+    printf("Output file    : %s\n", filename);
+
+    result = 0;
+cleanup:
+
+    free(buffer);
+
+    if (pcm != NULL) snd_pcm_close(pcm);
+
+    if (file != NULL)
+    {
+        if (fclose(file) != 0)
+        {
+            perror("Failed to close WAV file");
+            result = -1;
+        }
+    }
+    return result;
 }
 
 // print current capture config
@@ -209,10 +371,4 @@ void audio_capture_print_config(const pcm_config_t *config)
     printf("Period Size  : %lu frames\n", (unsigned long)config->period_size);
     printf("Period Count : %u\n", config->period_count);
     printf("=================================================\n");
-}
-
-// Convert an ALSA error code into a readable message using snd_strerror().
-const char *audio_capture_error_string(int error_code)
-{
-
 }

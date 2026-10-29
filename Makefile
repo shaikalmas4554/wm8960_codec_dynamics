@@ -6,7 +6,9 @@ TARGET = build/wm8960_codec_dynamics
 
 SOURCES = app/user_app.c \
           src/ctl/audio_ctl.c \
-          src/capture/audio_capture.c
+		  src/ctl/alc_control.c \
+          src/capture/audio_capture.c \
+		  src/capture/wav_header.c 
 
 all: $(TARGET)
 
