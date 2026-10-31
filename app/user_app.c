@@ -78,14 +78,6 @@ int main(void)
                 break;
 
             case 3:
-                printf("WAV playback is not implemented yet.\n");
-                break;
-
-            case 4:
-                printf("Volume control is not implemented yet.\n");
-                break;
-
-            case 5:
                 ret = alc_control_set_function(ALSA_CONTROL_DEVICE, "Stereo");
                 if (ret == 0)
                 {
@@ -93,7 +85,7 @@ int main(void)
                 }
                 break;
 
-            case 6:
+            case 4:
                 ret = alc_control_set_function(ALSA_CONTROL_DEVICE, "Off");
                 if (ret == 0)
                 {
@@ -101,40 +93,35 @@ int main(void)
                 }
                 break;
 
+            case 5:
+            case 6:
             case 7:
             case 8:
             case 9:
-            case 10:
-            case 11:
-            case 12:
             {
                 const char *control_name;
                 long value;
 
                 switch (option)
                 {
-                    case 7:
+                    case 5:
                         control_name = "ALC Target";
                         break;
 
-                    case 8:
+                    case 6:
                         control_name = "ALC Max Gain";
                         break;
 
-                    case 9:
+                    case 7:
                         control_name = "ALC Min Gain";
                         break;
 
-                    case 10:
+                    case 8:
                         control_name = "ALC Attack";
                         break;
 
-                    case 11:
-                        control_name = "ALC Decay";
-                        break;
-
                     default:
-                        control_name = "ALC Hold Time";
+                        control_name = "ALC Decay";
                         break;
                 }
 
@@ -159,7 +146,32 @@ int main(void)
                 break;
             }
 
-            case 13:
+            case 10:
+            {
+                long value;
+
+                printf("Enter value for ALC Hold Time: ");
+
+                if (scanf("%ld", &value) != 1)
+                {
+                    int ch;
+
+                    printf("Invalid input. Please enter an integer.\n");
+
+                    while ((ch = getchar()) != '\n' && ch != EOF);
+
+                    break;
+                }
+
+                ret = alc_control_set_integer(ALSA_CONTROL_DEVICE, "ALC Hold Time", value);
+                if (ret == 0)
+                {
+                    alc_control_show_value(ALSA_CONTROL_DEVICE, "ALC Hold Time");
+                }
+                break;
+            }
+
+            case 11:
             {
                 char mode[32];
 
@@ -172,14 +184,18 @@ int main(void)
                 }
 
                 ret = alc_control_set_enum(ALSA_CONTROL_DEVICE, "ALC Mode", mode);
+                if (ret == 0)
+                {
+                    alc_control_show(ALSA_CONTROL_DEVICE);
+                }
                 break;
             }
 
-            case 14:
-                ret = alc_control_show_value(ALSA_CONTROL_DEVICE, "ALC Target");
+            case 12:
+                ret = alc_control_show(ALSA_CONTROL_DEVICE);
                 break;
 
-            case 15:
+            case 13:
                 ret = noise_gate_control_set(ALSA_CONTROL_DEVICE, 1);
                 if (ret == 0)
                 {
@@ -187,7 +203,7 @@ int main(void)
                 }
                 break;
 
-            case 16:
+            case 14:
                 ret = noise_gate_control_set(ALSA_CONTROL_DEVICE, 0);
                 if (ret == 0)
                 {
@@ -195,7 +211,7 @@ int main(void)
                 }
                 break;
 
-            case 17:
+            case 15:
             {
                 long threshold;
 
@@ -220,7 +236,7 @@ int main(void)
                 break;
             }
 
-            case 18:
+            case 16:
                 ret = noise_gate_control_show(ALSA_CONTROL_DEVICE);
                 break;
 
@@ -239,25 +255,32 @@ int main(void)
 
 void print_options(void)
 {
-    printf("\n========== MENU ==========\n");
+    printf("\n========== WM8960 CODEC DYNAMICS ==========\n");
+
+    printf("\n--- PCM CAPTURE ---\n");
     printf(" 1) Capture Audio (%d seconds)\n", CAPTURE_DURATION);
     printf(" 2) Show Capture Parameters\n");
-    printf(" 3) Play Audio from WAV File\n");
-    printf(" 4) Set Volume\n");
-    printf(" 5) Enable ALC\n");
-    printf(" 6) Disable ALC\n");
-    printf(" 7) Set ALC Target\n");
-    printf(" 8) Set ALC Maximum Gain\n");
-    printf(" 9) Set ALC Minimum Gain\n");
-    printf("10) Set ALC Attack\n");
-    printf("11) Set ALC Decay\n");
-    printf("12) Set ALC Hold Time\n");
-    printf("13) Set ALC Mode\n");
-    printf("14) Show ALC Target\n");
-    printf("15) Enable Noise Gate\n");
-    printf("16) Disable Noise Gate\n");
-    printf("17) Set Noise Gate Threshold\n");
-    printf("18) Show Noise Gate Status\n");
+
+    printf("\n--- AUTOMATIC LEVEL CONTROL (ALC) ---\n");
+    printf(" 3) Enable ALC\n");
+    printf(" 4) Disable ALC\n");
+    printf(" 5) Set ALC Target\n");
+    printf(" 6) Set ALC Maximum Gain\n");
+    printf(" 7) Set ALC Minimum Gain\n");
+    printf(" 8) Set ALC Attack\n");
+    printf(" 9) Set ALC Decay\n");
+    printf("10) Set ALC Hold Time\n");
+    printf("11) Set ALC Mode\n");
+    printf("12) Show ALC Configuration\n");
+
+    printf("\n--- NOISE GATE ---\n");
+    printf("13) Enable Noise Gate\n");
+    printf("14) Disable Noise Gate\n");
+    printf("15) Set Noise Gate Threshold\n");
+    printf("16) Show Noise Gate Configuration\n");
+
+    printf("\n--- SYSTEM ---\n");
     printf(" 0) Exit\n");
-    printf("==========================\n");
+
+    printf("===========================================\n");
 }
