@@ -11,7 +11,8 @@ int audio_ctl_list(const char *card_name)
 
     err = snd_ctl_open(&ctl, card_name, 0);
 
-    if (err < 0) {
+    if (err < 0) 
+    {
         fprintf(stderr, "Failed to open ALSA control: %s\n",
                 snd_strerror(err));
         return err;
@@ -21,7 +22,8 @@ int audio_ctl_list(const char *card_name)
 
     err = snd_ctl_elem_list(ctl, list);
 
-    if (err < 0) {
+    if (err < 0) 
+    {
         fprintf(stderr, "Failed to list ALSA controls: %s\n",
                 snd_strerror(err));
         snd_ctl_close(ctl);
