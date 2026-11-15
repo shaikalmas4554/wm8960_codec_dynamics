@@ -392,6 +392,106 @@ out:
     return err;
 }
 
+int alc_control_show_enum(const char *card_name, const char *control_name)
+{
+    snd_ctl_t *ctl = NULL;
+    snd_ctl_elem_id_t *id = NULL;
+    snd_ctl_elem_info_t *info = NULL;
+    snd_ctl_elem_value_t *value = NULL;
+
+    const char *name = NULL;
+    int err;
+
+    if (card_name == NULL || control_name == NULL)
+    {
+        return -EINVAL;
+    }
+
+    snd_ctl_elem_id_alloca(&id);
+    snd_ctl_elem_info_alloca(&info);
+    snd_ctl_elem_value_alloca(&value);
+
+    err = open_and_find(card_name, control_name, &ctl, id, info);
+    if (err < 0)
+    {
+        return err;
+    }
+
+    if (snd_ctl_elem_info_get_type(info) != SND_CTL_ELEM_TYPE_ENUMERATED)
+    {
+        fprintf(stderr, "'%s' is not an enumerated control\n", control_name);
+        err = -EINVAL;
+        goto out;
+    }
+
+    snd_ctl_elem_value_set_id(value, id);
+    err = snd_ctl_elem_read(ctl, value);
+    if (err < 0)
+    {
+        goto out;
+    }
+
+    err = enum_item_name(ctl, info, snd_ctl_elem_value_get_enumerated(value, 0), &name);
+    if (err < 0)
+    {
+        goto out;
+    }
+
+    printf("%s: %s\n", control_name, name != NULL ? name : "Unknown");
+
+out:
+    snd_ctl_close(ctl);
+    return err;
+}
+
+int alc_control_show_all(const char *card_name)
+{
+    static const char *const integer_controls[] =
+    {
+        "ALC Target",
+        "ALC Max Gain",
+        "ALC Min Gain",
+        "ALC Attack",
+        "ALC Decay",
+        "ALC Hold Time"
+    };
+
+    unsigned int i;
+    int result = 0;
+    int err;
+
+    if (card_name == NULL)
+    {
+        return -EINVAL;
+    }
+
+    printf("\n========== ALC Configuration ==========\n");
+
+    err = alc_control_show_enum(card_name, "ALC Function");
+    if (err < 0)
+    {
+        result = err;
+    }
+
+    err = alc_control_show_enum(card_name, "ALC Mode");
+    if (err < 0)
+    {
+        result = err;
+    }
+
+    for (i = 0; i < sizeof(integer_controls) / sizeof(integer_controls[0]); i++)
+    {
+        err = alc_control_show_value(card_name, integer_controls[i]);
+        if (err < 0)
+        {
+            result = err;
+        }
+    }
+
+    printf("=======================================\n");
+    return result;
+}
+
 int noise_gate_control_set(const char *card_name, int enable)
 {
     snd_ctl_t *ctl = NULL;

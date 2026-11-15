@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 #include "audio_capture.h"
 
 // capture init
@@ -165,6 +167,13 @@ cleanup:
 // audio capture
 int audio_capture(const char *filename, const pcm_config_t *config, unsigned int duration_seconds)
 {
+    return audio_capture_with_stats(filename, config, duration_seconds, NULL);
+}
+
+// audio capture with level monitoring
+int audio_capture_with_stats(const char *filename, const pcm_config_t *config, unsigned int duration_seconds,
+                             audio_level_summary_t *summary)
+{
     snd_pcm_t *pcm = NULL;
     pcm_config_t actual_config;
     FILE *file = NULL;
@@ -180,6 +189,11 @@ int audio_capture(const char *filename, const pcm_config_t *config, unsigned int
 
     uint64_t total_frames;
     uint64_t total_bytes = 0;
+
+    audio_level_t window_level;
+    audio_level_summary_t levels;
+    snd_pcm_uframes_t window_frames = 0;
+    unsigned int channel;
 
     int ret;
     int result = -1;
@@ -199,7 +213,7 @@ int audio_capture(const char *filename, const pcm_config_t *config, unsigned int
         return -EINVAL;
     }
 
-    if (config->channels > UINT16_MAX / 2)
+    if (config->channels > UINT16_MAX / 2 || config->channels > AUDIO_LEVEL_MAX_CHANNELS)
     {
         fprintf(stderr, "Error: Unsupported channel count\n");
         return -EINVAL;
@@ -234,14 +248,21 @@ int audio_capture(const char *filename, const pcm_config_t *config, unsigned int
         goto cleanup;
     }
 
-    bytes_per_frame = (size_t)actual_config.channels * 2U;
+    // Let ALSA convert frames to bytes for the configured format and channel count.
+    bytes_per_frame = (size_t)snd_pcm_frames_to_bytes(pcm, 1);
+    if (bytes_per_frame != (size_t)actual_config.channels * 2U)
+    {
+        fprintf(stderr, "Error: Unexpected ALSA frame size\n");
+        goto cleanup;
+    }
+
     if (actual_config.period_size > SIZE_MAX / bytes_per_frame)
     {
         fprintf(stderr, "Error: Audio buffer size overflow\n");
         goto cleanup;
     }
 
-    buffer_bytes = (size_t)actual_config.period_size * bytes_per_frame;
+    buffer_bytes = (size_t)snd_pcm_frames_to_bytes(pcm, (snd_pcm_sframes_t)actual_config.period_size);
     buffer = malloc(buffer_bytes);
     if (buffer == NULL)
     {
@@ -271,6 +292,10 @@ int audio_capture(const char *filename, const pcm_config_t *config, unsigned int
 
     frames_remaining = (snd_pcm_uframes_t)total_frames;
 
+    memset(&levels, 0, sizeof(levels));
+    audio_level_reset(&levels.total, actual_config.channels);
+    audio_level_reset(&window_level, actual_config.channels);
+
     printf("Recording started...\n");
     printf("Device   : %s\n", actual_config.device);
     printf("Rate     : %u Hz\n", actual_config.rate);
@@ -287,6 +312,12 @@ int audio_capture(const char *filename, const pcm_config_t *config, unsigned int
         frames_read = snd_pcm_readi(pcm, buffer, frames_to_read);
         if (frames_read < 0)
         {
+            // -EPIPE means the ring buffer overran; snd_pcm_recover() calls snd_pcm_prepare().
+            if (frames_read == -EPIPE)
+            {
+                levels.overruns++;
+            }
+
             ret = snd_pcm_recover(pcm, (int)frames_read, 1);
             if (ret < 0)
             {
@@ -302,7 +333,7 @@ int audio_capture(const char *filename, const pcm_config_t *config, unsigned int
             continue;
         }
 
-        bytes_to_write = (size_t)frames_read * bytes_per_frame;
+        bytes_to_write = (size_t)snd_pcm_frames_to_bytes(pcm, frames_read);
         if (total_bytes + bytes_to_write > UINT32_MAX - 36U)
         {
             fprintf(stderr, "Error: WAV file size limit reached\n");
@@ -317,6 +348,32 @@ int audio_capture(const char *filename, const pcm_config_t *config, unsigned int
 
         total_bytes += bytes_to_write;
         frames_remaining -= (snd_pcm_uframes_t)frames_read;
+
+        // Measure the captured audio and report the level once per second.
+        audio_level_update(&levels.total, (const int16_t *)buffer, (size_t)frames_read);
+        audio_level_update(&window_level, (const int16_t *)buffer, (size_t)frames_read);
+        window_frames += (snd_pcm_uframes_t)frames_read;
+
+        if (window_frames >= actual_config.rate)
+        {
+            printf("[%3u s]", levels.window_count + 1);
+
+            for (channel = 0; channel < window_level.channels; channel++)
+            {
+                printf("  ch%u RMS %7.2f dBFS  Peak %7.2f dBFS", channel, audio_level_rms_db(&window_level, channel),
+                       audio_level_peak_db(&window_level, channel));
+            }
+
+            printf("\n");
+
+            if (levels.window_count < AUDIO_LEVEL_MAX_WINDOWS)
+            {
+                levels.window_db[levels.window_count++] = audio_level_total_rms_db(&window_level);
+            }
+
+            audio_level_reset(&window_level, actual_config.channels);
+            window_frames = 0;
+        }
     }
 
     if (write_wav_header(file, actual_config.rate, actual_config.channels, (uint32_t)total_bytes) < 0)
@@ -335,6 +392,18 @@ int audio_capture(const char *filename, const pcm_config_t *config, unsigned int
     printf("Frames captured: %llu\n", (unsigned long long)(total_bytes / bytes_per_frame));
     printf("Audio data     : %llu bytes\n", (unsigned long long)total_bytes);
     printf("Output file    : %s\n", filename);
+    printf("Overruns       : %u\n", levels.overruns);
+
+    for (channel = 0; channel < levels.total.channels; channel++)
+    {
+        printf("Channel %u      : RMS %7.2f dBFS  Peak %7.2f dBFS\n", channel, audio_level_rms_db(&levels.total, channel),
+               audio_level_peak_db(&levels.total, channel));
+    }
+
+    if (summary != NULL)
+    {
+        *summary = levels;
+    }
 
     result = 0;
 cleanup:

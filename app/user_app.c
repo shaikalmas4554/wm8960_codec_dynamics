@@ -5,10 +5,11 @@
 #include "audio_capture.h"
 #include "audio_ctl.h"
 #include "alc_control.h"
+#include "dynamics_test.h"
 
 #define ALSA_CONTROL_DEVICE "hw:wm8960audio"
 #define CAPTURE_FILENAME    "capture.wav"
-#define CAPTURE_DURATION    10
+#define CAPTURE_DURATION    60
 
 void print_options(void);
 
@@ -192,7 +193,7 @@ int main(void)
             }
 
             case 12:
-                ret = alc_control_show(ALSA_CONTROL_DEVICE);
+                ret = alc_control_show_all(ALSA_CONTROL_DEVICE);
                 break;
 
             case 13:
@@ -240,6 +241,77 @@ int main(void)
                 ret = noise_gate_control_show(ALSA_CONTROL_DEVICE);
                 break;
 
+            case 17:
+            {
+                long volume;
+
+                printf("Enter Capture Volume (0-63): ");
+
+                if (scanf("%ld", &volume) != 1)
+                {
+                    int ch;
+
+                    printf("Invalid input. Please enter an integer.\n");
+
+                    while ((ch = getchar()) != '\n' && ch != EOF);
+
+                    break;
+                }
+
+                ret = alc_control_set_integer(ALSA_CONTROL_DEVICE, "Capture Volume", volume);
+                if (ret == 0)
+                {
+                    alc_control_show_value(ALSA_CONTROL_DEVICE, "Capture Volume");
+                }
+                break;
+            }
+
+            case 18:
+                ret = alc_control_show_value(ALSA_CONTROL_DEVICE, "Capture Volume");
+                break;
+
+            case 19:
+            {
+                char filename[64];
+
+                printf("Enter output file name (for example alc_on.wav): ");
+
+                if (scanf("%63s", filename) != 1)
+                {
+                    printf("Invalid input.\n");
+                    break;
+                }
+
+                printf("\nStarting audio capture...\n");
+
+                ret = audio_capture(filename, &config, CAPTURE_DURATION);
+                if (ret < 0)
+                {
+                    fprintf(stderr, "Audio capture failed\n");
+                }
+                else
+                {
+                    printf("Audio saved to %s\n", filename);
+                }
+                break;
+            }
+
+            case 20:
+                ret = dynamics_test_alc(ALSA_CONTROL_DEVICE, &config, ALC_TEST_DURATION);
+                if (ret < 0)
+                {
+                    fprintf(stderr, "ALC test failed\n");
+                }
+                break;
+
+            case 21:
+                ret = dynamics_test_noise_gate(ALSA_CONTROL_DEVICE, &config, NOISE_GATE_TEST_DURATION);
+                if (ret < 0)
+                {
+                    fprintf(stderr, "Noise gate test failed\n");
+                }
+                break;
+
             case 0:
                 printf("Exiting WM8960 Codec Dynamics.\n");
                 return EXIT_SUCCESS;
@@ -278,6 +350,15 @@ void print_options(void)
     printf("14) Disable Noise Gate\n");
     printf("15) Set Noise Gate Threshold\n");
     printf("16) Show Noise Gate Configuration\n");
+
+    printf("\n--- INPUT LEVEL ---\n");
+    printf("17) Set Capture Volume\n");
+    printf("18) Show Capture Volume\n");
+
+    printf("\n--- VERIFICATION ---\n");
+    printf("19) Capture To Named File\n");
+    printf("20) ALC Test (OFF vs ON)\n");
+    printf("21) Noise Gate Test (OFF vs ON)\n");
 
     printf("\n--- SYSTEM ---\n");
     printf(" 0) Exit\n");

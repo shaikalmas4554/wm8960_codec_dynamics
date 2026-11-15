@@ -3,6 +3,8 @@
 
 #include <alsa/asoundlib.h>
 
+#include "audio_level.h"
+
 // Default Capture Configuration
 #define PCM_CAPTURE_DEFAULT_DEVICE       "hw:wm8960audio,0"
 #define PCM_CAPTURE_DEFAULT_FORMAT       SND_PCM_FORMAT_S16_LE
@@ -34,6 +36,10 @@ int audio_capture_configure(snd_pcm_t *pcm, pcm_config_t *config);
 
 // audio capture
 int audio_capture(const char *filename, const pcm_config_t *config, unsigned int duration_seconds);
+
+// audio capture, also returns the measured levels (summary may be NULL)
+int audio_capture_with_stats(const char *filename, const pcm_config_t *config, unsigned int duration_seconds,
+                             audio_level_summary_t *summary);
 
 // print current capture config
 void audio_capture_print_config(const pcm_config_t *config);
