@@ -4,7 +4,6 @@
 
 #include <stdio.h> 
 #include <stdint.h>
-#include <limits.h>
 
 static int write_u16_le(FILE* file, uint16_t data)
 {

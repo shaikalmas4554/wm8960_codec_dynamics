@@ -21,8 +21,7 @@ static int find_control(snd_ctl_t *ctl, snd_ctl_elem_id_t *id, const char *contr
     return err;
 }
 
-static int open_and_find(const char *card_name, const char *control_name, snd_ctl_t **ctl,
-                         snd_ctl_elem_id_t *id, snd_ctl_elem_info_t *info)
+static int open_and_find(const char *card_name, const char *control_name, snd_ctl_t **ctl, snd_ctl_elem_id_t *id, snd_ctl_elem_info_t *info)
 {
     int err = snd_ctl_open(ctl, card_name, 0);
 

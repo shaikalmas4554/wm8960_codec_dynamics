@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "audio_capture.h"
-#include "audio_ctl.h"
 #include "alc_control.h"
 #include "dynamics_test.h"
 
@@ -28,12 +26,6 @@ int main(void)
     {
         fprintf(stderr, "Failed to initialize capture configuration\n");
         return EXIT_FAILURE;
-    }
-
-    ret = audio_ctl_list(ALSA_CONTROL_DEVICE);
-    if (ret < 0)
-    {
-        fprintf(stderr, "Warning: Could not list ALSA controls\n");
     }
 
     while (1)

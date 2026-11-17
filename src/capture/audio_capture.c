@@ -171,8 +171,7 @@ int audio_capture(const char *filename, const pcm_config_t *config, unsigned int
 }
 
 // audio capture with level monitoring
-int audio_capture_with_stats(const char *filename, const pcm_config_t *config, unsigned int duration_seconds,
-                             audio_level_summary_t *summary)
+int audio_capture_with_stats(const char *filename, const pcm_config_t *config, unsigned int duration_seconds, audio_level_summary_t *summary)
 {
     snd_pcm_t *pcm = NULL;
     pcm_config_t actual_config;

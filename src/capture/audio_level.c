@@ -1,6 +1,3 @@
-// Level measurement helpers: RMS and peak of interleaved 16-bit PCM in dBFS.
-// 0 dBFS is the maximum digital level, more negative is quieter.
-
 #include <math.h>
 #include <string.h>
 

@@ -1,6 +1,3 @@
-// Guided hardware verification of the WM8960 ALC and noise gate.
-// Each test records twice with only the codec setting changed, then compares the measured levels.
-
 #include <errno.h>
 #include <stdio.h>
 
