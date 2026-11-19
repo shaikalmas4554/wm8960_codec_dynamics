@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define AUDIO_LEVEL_MAX_CHANNELS 8
+#define AUDIO_LEVEL_MAX_CHANNELS 2
 #define AUDIO_LEVEL_MAX_WINDOWS  600
 #define AUDIO_LEVEL_FLOOR_DB     (-120.0)
 

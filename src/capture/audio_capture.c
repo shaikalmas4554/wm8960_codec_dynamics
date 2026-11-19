@@ -212,7 +212,7 @@ int audio_capture_with_stats(const char *filename, const pcm_config_t *config, u
         return -EINVAL;
     }
 
-    if (config->channels > UINT16_MAX / 2 || config->channels > AUDIO_LEVEL_MAX_CHANNELS)
+    if (config->channels > AUDIO_LEVEL_MAX_CHANNELS)
     {
         fprintf(stderr, "Error: Unsupported channel count\n");
         return -EINVAL;
