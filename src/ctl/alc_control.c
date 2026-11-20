@@ -161,7 +161,7 @@ out:
 
 int alc_control_set_function(const char *card_name, const char *function)
 {
-    return alc_control_set_enum(card_name, "ALC Function", function);
+    return alc_control_set_enum(card_name, "Dyn ALC Function", function);
 }
 
 int alc_control_set_integer(const char *card_name, const char *control_name, long requested_value)
@@ -359,7 +359,7 @@ int alc_control_show(const char *card_name)
     snd_ctl_elem_info_alloca(&info);
     snd_ctl_elem_value_alloca(&value);
 
-    err = open_and_find(card_name, "ALC Function", &ctl, id, info);
+    err = open_and_find(card_name, "Dyn ALC Function", &ctl, id, info);
     if (err < 0)
     {
         return err;
@@ -384,7 +384,7 @@ int alc_control_show(const char *card_name)
         goto out;
     }
 
-    printf("ALC Function: %s\n", name != NULL ? name : "Unknown");
+    printf("Dyn ALC Function: %s\n", name != NULL ? name : "Unknown");
 
 out:
     snd_ctl_close(ctl);
@@ -466,7 +466,7 @@ int alc_control_show_all(const char *card_name)
 
     printf("\n========== ALC Configuration ==========\n");
 
-    err = alc_control_show_enum(card_name, "ALC Function");
+    err = alc_control_show_enum(card_name, "Dyn ALC Function");
     if (err < 0)
     {
         result = err;
@@ -511,7 +511,7 @@ int noise_gate_control_set(const char *card_name, int enable)
     snd_ctl_elem_info_alloca(&info);
     snd_ctl_elem_value_alloca(&value);
 
-    err = open_and_find(card_name, "Noise Gate Switch", &ctl, id, info);
+    err = open_and_find(card_name, "Dyn Noise Gate Switch", &ctl, id, info);
     if (err < 0)
     {
         return err;
@@ -533,7 +533,7 @@ int noise_gate_control_set(const char *card_name, int enable)
         snd_ctl_elem_value_set_boolean(value, channel, enable);
     }
 
-    err = write_and_read_back(ctl, value, "Noise Gate Switch");
+    err = write_and_read_back(ctl, value, "Dyn Noise Gate Switch");
     if (err < 0)
     {
         goto out;
@@ -559,7 +559,7 @@ out:
 
 int noise_gate_control_set_threshold(const char *card_name, long threshold)
 {
-    return alc_control_set_integer(card_name, "Noise Gate Threshold", threshold);
+    return alc_control_set_integer(card_name, "Dyn Noise Gate Threshold", threshold);
 }
 
 int noise_gate_control_show(const char *card_name)
@@ -580,7 +580,7 @@ int noise_gate_control_show(const char *card_name)
     snd_ctl_elem_info_alloca(&info);
     snd_ctl_elem_value_alloca(&value);
 
-    err = open_and_find(card_name, "Noise Gate Switch", &ctl, id, info);
+    err = open_and_find(card_name, "Dyn Noise Gate Switch", &ctl, id, info);
     if (err < 0)
     {
         return err;
@@ -605,7 +605,7 @@ int noise_gate_control_show(const char *card_name)
     printf("Noise Gate: %s\n", snd_ctl_elem_value_get_boolean(value, 0) ? "Enabled" : "Disabled");
 
     snd_ctl_close(ctl);
-    return alc_control_show_value(card_name, "Noise Gate Threshold");
+    return alc_control_show_value(card_name, "Dyn Noise Gate Threshold");
 
 out:
     snd_ctl_close(ctl);

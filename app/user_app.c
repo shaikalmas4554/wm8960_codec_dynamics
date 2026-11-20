@@ -98,23 +98,23 @@ int main(void)
                 switch (option)
                 {
                     case 5:
-                        control_name = "ALC Target";
+                        control_name = "Dyn ALC Target";
                         break;
 
                     case 6:
-                        control_name = "ALC Max Gain";
+                        control_name = "Dyn ALC Max Gain";
                         break;
 
                     case 7:
-                        control_name = "ALC Min Gain";
+                        control_name = "Dyn ALC Min Gain";
                         break;
 
                     case 8:
-                        control_name = "ALC Attack";
+                        control_name = "Dyn ALC Attack";
                         break;
 
                     default:
-                        control_name = "ALC Decay";
+                        control_name = "Dyn ALC Decay";
                         break;
                 }
 
@@ -156,10 +156,10 @@ int main(void)
                     break;
                 }
 
-                ret = alc_control_set_integer(ALSA_CONTROL_DEVICE, "ALC Hold Time", value);
+                ret = alc_control_set_integer(ALSA_CONTROL_DEVICE, "Dyn ALC Hold Time", value);
                 if (ret == 0)
                 {
-                    alc_control_show_value(ALSA_CONTROL_DEVICE, "ALC Hold Time");
+                    alc_control_show_value(ALSA_CONTROL_DEVICE, "Dyn ALC Hold Time");
                 }
                 break;
             }
@@ -176,7 +176,7 @@ int main(void)
                     break;
                 }
 
-                ret = alc_control_set_enum(ALSA_CONTROL_DEVICE, "ALC Mode", mode);
+                ret = alc_control_set_enum(ALSA_CONTROL_DEVICE, "Dyn ALC Mode", mode);
                 if (ret == 0)
                 {
                     alc_control_show(ALSA_CONTROL_DEVICE);
