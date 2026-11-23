@@ -1,0 +1,1 @@
+cmd_/home/mirafra/nxp-audio/wm8960_module/snd-soc-wm8960.ko := aarch64-poky-linux-ld -r -EL  -maarch64elf -z noexecstack --no-warn-rwx-segments --build-id=sha1  -T scripts/module.lds -o /home/mirafra/nxp-audio/wm8960_module/snd-soc-wm8960.ko /home/mirafra/nxp-audio/wm8960_module/snd-soc-wm8960.o /home/mirafra/nxp-audio/wm8960_module/snd-soc-wm8960.mod.o;  true

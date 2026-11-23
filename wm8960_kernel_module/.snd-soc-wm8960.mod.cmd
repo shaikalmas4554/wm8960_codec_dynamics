@@ -1,0 +1,1 @@
+cmd_/home/mirafra/nxp-audio/wm8960_module/snd-soc-wm8960.mod := printf '%s\n'   wm8960.o | awk '!x[$$0]++ { print("/home/mirafra/nxp-audio/wm8960_module/"$$0) }' > /home/mirafra/nxp-audio/wm8960_module/snd-soc-wm8960.mod

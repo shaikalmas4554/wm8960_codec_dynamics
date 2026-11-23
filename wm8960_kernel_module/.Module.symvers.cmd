@@ -1,0 +1,1 @@
+cmd_/home/mirafra/nxp-audio/wm8960_module/Module.symvers :=  sed 's/ko$$/o/'  /home/mirafra/nxp-audio/wm8960_module/modules.order | scripts/mod/modpost -m     -o /home/mirafra/nxp-audio/wm8960_module/Module.symvers -n -e -i Module.symvers -T - 

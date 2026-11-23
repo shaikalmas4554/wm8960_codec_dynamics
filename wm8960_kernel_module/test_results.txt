@@ -1,0 +1,93 @@
+// attack 2, decay 2
+========== ALC STEP TEST ==========
+Play tests/wm8960_alc_step_test.wav (quiet - loud - quiet) into the microphone.
+Keep the source, volume and microphone position the same for both recordings.
+Recording length: 15 seconds each.
+ALC Function set to: Off (verified)
+ALC is OFF. Start the step sound together with the recording.
+Press Enter to start recording...
+ALSA PCM configuration applied successfully.
+Actual sample rate : 48000 Hz
+Actual period size : 480 frames
+Actual buffer size : 1920 frames
+Recording started...
+Device   : hw:wm8960audio,0
+Rate     : 48000 Hz
+Channels : 2
+Duration : 15 seconds
+[  1 s]  ch0 RMS  -38.41 dBFS  Peak  -25.00 dBFS  ch1 RMS  -38.41 dBFS  Peak  -25.00 dBFS
+[  2 s]  ch0 RMS  -29.55 dBFS  Peak  -18.78 dBFS  ch1 RMS  -29.55 dBFS  Peak  -18.78 dBFS
+[  3 s]  ch0 RMS  -27.70 dBFS  Peak  -20.33 dBFS  ch1 RMS  -27.70 dBFS  Peak  -20.33 dBFS
+[  4 s]  ch0 RMS  -26.43 dBFS  Peak  -21.33 dBFS  ch1 RMS  -26.43 dBFS  Peak  -21.33 dBFS
+[  5 s]  ch0 RMS  -25.36 dBFS  Peak  -18.80 dBFS  ch1 RMS  -25.36 dBFS  Peak  -18.80 dBFS
+[  6 s]  ch0 RMS   -9.88 dBFS  Peak   -1.82 dBFS  ch1 RMS   -9.88 dBFS  Peak   -1.82 dBFS
+[  7 s]  ch0 RMS   -8.30 dBFS  Peak   -4.30 dBFS  ch1 RMS   -8.30 dBFS  Peak   -4.30 dBFS
+[  8 s]  ch0 RMS   -9.10 dBFS  Peak   -5.70 dBFS  ch1 RMS   -9.10 dBFS  Peak   -5.70 dBFS
+[  9 s]  ch0 RMS   -8.94 dBFS  Peak   -5.16 dBFS  ch1 RMS   -8.94 dBFS  Peak   -5.16 dBFS
+[ 10 s]  ch0 RMS   -8.65 dBFS  Peak   -4.81 dBFS  ch1 RMS   -8.65 dBFS  Peak   -4.81 dBFS
+[ 11 s]  ch0 RMS  -12.05 dBFS  Peak   -4.05 dBFS  ch1 RMS  -12.05 dBFS  Peak   -4.05 dBFS
+[ 12 s]  ch0 RMS  -32.07 dBFS  Peak  -23.20 dBFS  ch1 RMS  -32.07 dBFS  Peak  -23.20 dBFS
+[ 13 s]  ch0 RMS  -31.95 dBFS  Peak  -22.30 dBFS  ch1 RMS  -31.95 dBFS  Peak  -22.30 dBFS
+[ 14 s]  ch0 RMS  -31.18 dBFS  Peak  -21.35 dBFS  ch1 RMS  -31.18 dBFS  Peak  -21.35 dBFS
+[ 15 s]  ch0 RMS  -30.90 dBFS  Peak  -23.31 dBFS  ch1 RMS  -30.90 dBFS  Peak  -23.31 dBFS
+Recording completed successfully.
+Frames captured: 720000
+Audio data     : 2880000 bytes
+Output file    : alc_test_off.wav
+Overruns       : 0
+Channel 0      : RMS  -13.24 dBFS  Peak   -1.82 dBFS
+Channel 1      : RMS  -13.24 dBFS  Peak   -1.82 dBFS
+ALC Function set to: Stereo (verified)
+
+ALC is ON. Start the step sound together with the recording.
+Press Enter to start recording...
+ALSA PCM configuration applied successfully.
+Actual sample rate : 48000 Hz
+Actual period size : 480 frames
+Actual buffer size : 1920 frames
+Recording started...
+Device   : hw:wm8960audio,0
+Rate     : 48000 Hz
+Channels : 2
+Duration : 15 seconds
+[  1 s]  ch0 RMS  -29.15 dBFS  Peak   -5.70 dBFS  ch1 RMS  -29.15 dBFS  Peak   -5.70 dBFS
+[  2 s]  ch0 RMS  -24.07 dBFS  Peak  -13.28 dBFS  ch1 RMS  -24.07 dBFS  Peak  -13.28 dBFS
+[  3 s]  ch0 RMS  -23.40 dBFS  Peak  -17.16 dBFS  ch1 RMS  -23.40 dBFS  Peak  -17.16 dBFS
+[  4 s]  ch0 RMS  -22.62 dBFS  Peak  -17.22 dBFS  ch1 RMS  -22.62 dBFS  Peak  -17.22 dBFS
+[  5 s]  ch0 RMS  -21.74 dBFS  Peak  -15.70 dBFS  ch1 RMS  -21.74 dBFS  Peak  -15.70 dBFS
+[  6 s]  ch0 RMS  -11.87 dBFS  Peak   -3.70 dBFS  ch1 RMS  -11.87 dBFS  Peak   -3.70 dBFS
+[  7 s]  ch0 RMS   -9.94 dBFS  Peak   -6.16 dBFS  ch1 RMS   -9.94 dBFS  Peak   -6.16 dBFS
+[  8 s]  ch0 RMS  -10.33 dBFS  Peak   -6.85 dBFS  ch1 RMS  -10.33 dBFS  Peak   -6.85 dBFS
+[  9 s]  ch0 RMS  -10.39 dBFS  Peak   -6.77 dBFS  ch1 RMS  -10.39 dBFS  Peak   -6.77 dBFS
+[ 10 s]  ch0 RMS  -10.41 dBFS  Peak   -6.78 dBFS  ch1 RMS  -10.41 dBFS  Peak   -6.78 dBFS
+[ 11 s]  ch0 RMS  -14.24 dBFS  Peak   -5.48 dBFS  ch1 RMS  -14.24 dBFS  Peak   -5.48 dBFS
+[ 12 s]  ch0 RMS  -33.46 dBFS  Peak  -23.80 dBFS  ch1 RMS  -33.46 dBFS  Peak  -23.80 dBFS
+[ 13 s]  ch0 RMS  -33.56 dBFS  Peak  -24.63 dBFS  ch1 RMS  -33.56 dBFS  Peak  -24.63 dBFS
+[ 14 s]  ch0 RMS  -32.98 dBFS  Peak  -24.05 dBFS  ch1 RMS  -32.98 dBFS  Peak  -24.05 dBFS
+[ 15 s]  ch0 RMS  -31.69 dBFS  Peak  -20.89 dBFS  ch1 RMS  -31.69 dBFS  Peak  -20.89 dBFS
+Recording completed successfully.
+Frames captured: 720000
+Audio data     : 2880000 bytes
+Output file    : alc_test_on.wav
+Overruns       : 0
+Channel 0      : RMS  -14.75 dBFS  Peak   -3.70 dBFS
+Channel 1      : RMS  -14.75 dBFS  Peak   -3.70 dBFS
+
+---------- ALC TEST RESULT ----------
+ALC OFF    ch0  RMS  -13.24 dBFS  Peak   -1.82 dBFS
+ALC OFF    ch1  RMS  -13.24 dBFS  Peak   -1.82 dBFS
+ALC ON     ch0  RMS  -14.75 dBFS  Peak   -3.70 dBFS
+ALC ON     ch1  RMS  -14.75 dBFS  Peak   -3.70 dBFS
+
+Median level (dBFS)           Quiet       Loud       Step
+ALC OFF                      -27.70      -8.94      18.76
+ALC ON                       -23.40     -10.39      13.02
+
+Quiet part gain change : +4.30 dB (positive means ALC raised quiet sound)
+Loud part gain change  : -1.45 dB (zero or negative means ALC held loud sound)
+Loud/quiet step reduced: 5.74 dB
+RESULT: ALC compressed the level step.
+Files: alc_test_off.wav, alc_test_on.wav
+-------------------------------------
+
+
